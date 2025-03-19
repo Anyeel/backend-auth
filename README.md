@@ -16,3 +16,19 @@ git commit -m "build"
 ```bash
 gh repo create
 ```
+
+## Empezamos a crear proyecto npm y node.js
+
+1. Para arrancar el proyecto npm:
+   
+```bash
+npm init -y
+```
+
+2. Descargamos las dependencias
+
+```bash
+npm i express
+```
+
+3. Creamos un .gitignore para node_modules
