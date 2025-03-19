@@ -10,3 +10,9 @@ git init
 git add .
 git commit -m "build"
 ```
+
+3. Crear el repo en Github
+   
+```bash
+gh repo create
+```
