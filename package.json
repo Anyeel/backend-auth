@@ -4,6 +4,7 @@
   "description": "## Inicializar el repositorio",
   "main": "index.js",
   "scripts": {
+    "dev": "rm database.db; node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

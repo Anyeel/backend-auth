@@ -4,4 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   pass TEXT NOT NULL
 );
 
-INSERT INTO users (name, pass) VALUES ('admin', 'admin');
+INSERT INTO users (name, pass) VALUES 
+    ('admin', 'admin'),
+    ('user', 'user');
+
