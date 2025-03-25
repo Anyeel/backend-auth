@@ -46,3 +46,79 @@ app.listen(port, () => {
     console.log(`Servidor funcionando en el puerto ${port}`);
 });
 
+app.get("/plazasdisponibles", (req, res) => {
+    const plazas = getPlazasDisponibles();
+    res.json(plazas);
+});
+
+// Función para obtener todas las plazas disponibles
+function getPlazasDisponibles() {
+    const query = db.prepare('SELECT * FROM plazas WHERE ocupado = false');
+    return query.all();
+}
+
+// Función para obtener todas las plazas ocupadas
+function getPlazasOcupadas() {
+    const query = db.prepare('SELECT * FROM plazas WHERE ocupado = true');
+    return query.all();
+}
+
+// Función para obtener todas las plazas públicas disponibles
+function getPlazasPublicasDisponibles() {
+    const query = db.prepare('SELECT * FROM plazas WHERE tipo = "publicas" AND ocupado = false');
+    return query.all();
+}
+
+// Función para obtener todas las plazas públicas ocupadas
+function getPlazasPublicasOcupadas() {
+    const query = db.prepare('SELECT * FROM plazas WHERE tipo = "publicas" AND ocupado = true');
+    return query.all();
+}
+
+// Función para obtener todas las plazas privadas disponibles
+function getPlazasPrivadasDisponibles() {
+    const query = db.prepare('SELECT * FROM plazas WHERE tipo = "privadas" AND ocupado = false');
+    return query.all();
+}
+
+// Función para obtener todas las plazas privadas ocupadas
+function getPlazasPrivadasOcupadas() {
+    const query = db.prepare('SELECT * FROM plazas WHERE tipo = "privadas" AND ocupado = true');
+    return query.all();
+}
+
+// Función para obtener la cantidad de plazas disponibles
+function getCantidadPlazasDisponibles() {
+    const query = db.prepare('SELECT COUNT(*) AS cantidad FROM plazas WHERE ocupado = false');
+    return query.get();
+}
+
+// Función para obtener la cantidad de plazas ocupadas
+function getCantidadPlazasOcupadas() {
+    const query = db.prepare('SELECT COUNT(*) AS cantidad FROM plazas WHERE ocupado = true');
+    return query.get();
+}
+
+// Función para obtener la cantidad de plazas públicas disponibles
+function getCantidadPlazasPublicasDisponibles() {
+    const query = db.prepare('SELECT COUNT(*) AS cantidad FROM plazas WHERE tipo = "publicas" AND ocupado = false');
+    return query.get();
+}
+
+// Función para obtener la cantidad de plazas públicas ocupadas
+function getCantidadPlazasPublicasOcupadas() {
+    const query = db.prepare('SELECT COUNT(*) AS cantidad FROM plazas WHERE tipo = "publicas" AND ocupado = true');
+    return query.get();
+}
+
+// Función para obtener la cantidad de plazas privadas disponibles
+function getCantidadPlazasPrivadasDisponibles() {
+    const query = db.prepare('SELECT COUNT(*) AS cantidad FROM plazas WHERE tipo = "privadas" AND ocupado = false');
+    return query.get();
+}
+
+// Función para obtener la cantidad de plazas privadas ocupadas
+function getCantidadPlazasPrivadasOcupadas() {
+    const query = db.prepare('SELECT COUNT(*) AS cantidad FROM plazas WHERE tipo = "privadas" AND ocupado = true');
+    return query.get();
+}
