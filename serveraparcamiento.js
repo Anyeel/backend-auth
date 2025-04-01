@@ -53,7 +53,29 @@ app.get("/plazas/:id", (req, res) => {
     const plaza = query.all(id);
     res.json(plaza);
 });
-/*
+
+app.patch("/users/:id/ocupado", (req, res) => {
+    const id = req.params.id;
+
+    // Consulta para obtener el estado actual de "ocupado"
+    const selectQuery = db.prepare('SELECT ocupado FROM users WHERE id = ?');
+    const user = selectQuery.get(id);
+
+    if (!user) {
+        res.status(404).send('Usuario no encontrado');
+        return;
+    }
+
+    // Alternar entre 0 y 1
+    const nuevoEstado = user.ocupado === 0 ? 1 : 0;
+
+    // Actualizar el estado en la base de datos
+    const updateQuery = db.prepare('UPDATE users SET ocupado = ? WHERE id = ?');
+    updateQuery.run(nuevoEstado, id);
+
+    res.json({ id, ocupado: nuevoEstado });
+});
+
 app.listen(port, () => {
     console.log(`Servidor funcionando en el puerto ${port}`);
 });
