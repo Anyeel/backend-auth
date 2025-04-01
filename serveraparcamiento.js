@@ -13,13 +13,14 @@ const db = betterSqlite3('aparcamiento.db');
 const server = http.createServer(app);
 const io = new Server(server);
 
+app.use(express.json()); // Middleware para manejar JSON en requests
 app.use(express.static('public'));
 
 const initSqlPath = path.join(__dirname, 'init-aparcamiento.sql');
 const initSql = fs.readFileSync(initSqlPath, 'utf-8');
 db.exec(initSql);
 
-// endpoint de la conexion
+// Conexión de Socket.IO
 io.on("connection", (socket) => {
     console.log("Usuario conectado");
     socket.emit("connected", "Conexión establecida");
@@ -28,61 +29,66 @@ io.on("connection", (socket) => {
     });
 });
 
-setInterval(() =>{
+// Emitir información de plazas cada 2 segundos
+setInterval(() => {
     const rows = db.prepare("SELECT * FROM plazas").all();
     io.emit("parkingData", rows);
-}, 2000)
+}, 2000);
 
 server.listen(port, () => {
-    console.log("Servidor funcionando en el puerto 3000");
+    console.log(`Servidor funcionando en el puerto ${port}`);
 });
 
-app.get('/', (req, res) => {
-    res.send('Hola Mundo');
-});
-
+// Endpoint para obtener todas las plazas
 app.get("/plazas", (req, res) => {
     const query = db.prepare('SELECT * FROM plazas');
     const plazas = query.all();
     res.json(plazas);
 });
 
+// Endpoint para obtener una plaza por ID
 app.get("/plazas/:id", (req, res) => {
     const query = db.prepare('SELECT * FROM plazas WHERE id = ?');
     const id = req.params.id;
-    const plaza = query.all(id);
+    const plaza = query.get(id);
     res.json(plaza);
 });
 
-app.patch("/users/:id/ocupado", (req, res) => {
+// Endpoint para alternar el estado de "ocupado" de una plaza
+app.patch("/plazas/:id/ocupado", (req, res) => {
     const id = req.params.id;
 
-    // Consulta para obtener el estado actual de "ocupado"
-    const selectQuery = db.prepare('SELECT ocupado FROM users WHERE id = ?');
-    const user = selectQuery.get(id);
+    // Obtener el estado actual de la plaza
+    const selectQuery = db.prepare('SELECT ocupado FROM plazas WHERE id = ?');
+    const plaza = selectQuery.get(id);
 
-    if (!user) {
-        res.status(404).send('Usuario no encontrado');
+    if (!plaza) {
+        res.status(404).send('Plaza no encontrada');
         return;
     }
 
-    // Alternar entre 0 y 1
-    const nuevoEstado = user.ocupado === 0 ? 1 : 0;
+    // Alternar el estado de "ocupado"
+    const nuevoEstado = plaza.ocupado === 0 ? 1 : 0;
 
-    // Actualizar el estado en la base de datos
-    const updateQuery = db.prepare('UPDATE users SET ocupado = ? WHERE id = ?');
+    // Actualizar la plaza en la base de datos
+    const updateQuery = db.prepare('UPDATE plazas SET ocupado = ? WHERE id = ?');
     updateQuery.run(nuevoEstado, id);
 
     res.json({ id, ocupado: nuevoEstado });
 });
 
-app.listen(port, () => {
-    console.log(`Servidor funcionando en el puerto ${port}`);
+// Función para obtener todas las plazas disponibles
+app.get("/plazasdisponibles", (req, res) => {
+    const query = db.prepare('SELECT * FROM plazas WHERE ocupado = false');
+    const plazasDisponibles = query.all();
+    res.json(plazasDisponibles);
 });
 
-app.get("/plazasdisponibles", (req, res) => {
-    const plazas = getPlazasDisponibles();
-    res.json(plazas);
+// Función para obtener todas las plazas ocupadas
+app.get("/plazasocupadas", (req, res) => {
+    const query = db.prepare('SELECT * FROM plazas WHERE ocupado = true');
+    const plazasOcupadas = query.all();
+    res.json(plazasOcupadas);
 });
 
 // Función para obtener todas las plazas disponibles
