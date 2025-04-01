@@ -46,6 +46,28 @@ app.listen(port, () => {
     console.log(`Servidor funcionando en el puerto ${port}`);
 });
 
+app.patch("/plazas/:id/ocupado", (req, res) => {
+    const id = req.params.id;
+
+    // Obtener el estado actual de "ocupado"
+    const selectQuery = db.prepare('SELECT ocupado FROM plazas WHERE id = ?');
+    const plaza = selectQuery.get(id);
+
+    if (!plaza) {
+        res.status(404).send('Plaza no encontrada');
+        return;
+    }
+
+    // Alternar entre 0 y 1 (false y true)
+    const nuevoEstado = plaza.ocupado === 0 ? 1 : 0;
+
+    // Actualizar el estado en la base de datos
+    const updateQuery = db.prepare('UPDATE plazas SET ocupado = ? WHERE id = ?');
+    updateQuery.run(nuevoEstado, id);
+
+    res.json({ id, ocupado: nuevoEstado });
+});
+
 app.get("/plazasdisponibles", (req, res) => {
     const plazas = getPlazasDisponibles();
     res.json(plazas);

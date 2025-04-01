@@ -5,73 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dibujo Plazas</title>
     <style>
-        .parking-lot {
-          display: grid;
-          grid-template-columns: repeat(10, 100px); /* 5 plazas por fila */
-          gap: 15px;
-          justify-content: center;
-        }
-      
-        .plaza {
-          width: 110px;
-          height: 110px;
-          border: 1px solid black;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          text-align: center;
-          font-size: 12px;
-          border-radius: 5px;
-          margin: 0px;
-          padding: 0;
-        }
-      
-        .plaza.libre {
-          background-color: green;
-          color: white;
-        }
-      
-        .plaza.ocupada {
-          background-color: red;
-          color: white;
-        }
-      </style>
-      <div class="parking-lot" id="parkingLot"></div>
+      .parking-lot {
+        display: grid;
+        grid-template-columns: repeat(6, 150px); /* Ahora habrá solo 5 plazas por fila */
+        gap: 20px; /* Espaciado entre las plazas */
+        justify-content: center;
+      }
+    
+      .plaza {
+        width: 150px; /* Aumentamos el ancho */
+        height: 150px; /* Aumentamos la altura */
+        border: 2px solid black; /* Bordes más gruesos */
+        /*display: flex;*/
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-size: 12px; /* Texto más grande */
+        border-radius: 10px; /* Bordes más redondeados */
+        margin: 0px;
+        padding: 6px; /* Agregamos un pequeño espacio interno */
+      }
+    
+      .plaza.libre {
+        background-color: green;
+        color: white;
+      }
+    
+      .plaza.ocupada {
+        background-color: red;
+        color: white;
+      }
+  
+      .plaza button {
+        margin-top: 0px;
+        padding: 7px; /* Botones más grandes */
+        font-size: 12px;
+        border-radius: 5px; /* Bordes de botones más redondeados */
+        cursor: pointer;
+      }
+  </style>
+  
 </head>
 <body>
-    <script>
-        fetch('/plazas')
-          .then(response => response.json())
-          .then(plazas => {
-            const parkingLot = document.getElementById("parkingLot");
-      
-            plazas.forEach(plaza => {
-              const divPlaza = document.createElement("div");
-              divPlaza.classList.add("plaza");
-              divPlaza.classList.add(plaza.ocupado ? "ocupada" : "libre");
-      
-              // ID de la plaza
-              const h1 = document.createElement("h1");
-              h1.innerText = plaza.id;
-              divPlaza.appendChild(h1);
-      
-              // Tipo de plaza
-              const pTipoPlaza = document.createElement("p");
-              pTipoPlaza.innerText = `Tipo: ${plaza.tipo}`;
-              divPlaza.appendChild(pTipoPlaza);
-      
-              // Piso
-              const pPiso = document.createElement("p");
-              pPiso.innerText = `Piso: ${plaza.piso}`;
-              divPlaza.appendChild(pPiso);
-      
-              // Añadir la plaza al aparcamiento
-              parkingLot.appendChild(divPlaza);
+    <div class="parking-lot" id="parkingLot"></div>
 
-            });
-          })
-          .catch(error => console.error(error));
-      </script>
+    <script>
+        function toggleEstado(plazaId) {
+            fetch(`/plazas/${plazaId}/ocupado`, { method: 'PATCH' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(`Plaza ${data.id} ahora tiene estado: ${data.ocupado ? 'Ocupada' : 'Libre'}`);
+                    renderPlazas(); // Recargar la lista de plazas
+                })
+                .catch(error => console.error('Error al cambiar el estado:', error));
+        }
+
+        function renderPlazas() {
+            fetch('/plazas')
+                .then(response => response.json())
+                .then(plazas => {
+                    const parkingLot = document.getElementById("parkingLot");
+                    parkingLot.innerHTML = ""; // Limpiar contenido anterior
+
+                    plazas.forEach(plaza => {
+                        const divPlaza = document.createElement("div");
+                        divPlaza.classList.add("plaza");
+                        divPlaza.classList.add(plaza.ocupado ? "ocupada" : "libre");
+
+                        // ID de la plaza
+                        const h1 = document.createElement("h1");
+                        h1.innerText = plaza.id;
+                        divPlaza.appendChild(h1);
+
+                        // Tipo de plaza
+                        const pTipoPlaza = document.createElement("p");
+                        pTipoPlaza.innerText = `Tipo: ${plaza.tipo}`;
+                        divPlaza.appendChild(pTipoPlaza);
+
+                        // Piso
+                        const pPiso = document.createElement("p");
+                        pPiso.innerText = `Piso: ${plaza.piso}`;
+                        divPlaza.appendChild(pPiso);
+
+                        // Botón para cambiar estado
+                        const button = document.createElement("button");
+                        button.innerText = plaza.ocupado ? "Liberar" : "Ocupar";
+                        button.addEventListener("click", () => toggleEstado(plaza.id));
+                        divPlaza.appendChild(button);
+
+                        // Añadir la plaza al aparcamiento
+                        parkingLot.appendChild(divPlaza);
+                    });
+                })
+                .catch(error => console.error(error));
+        }
+
+        renderPlazas();
+    </script>
 </body>
 </html>
