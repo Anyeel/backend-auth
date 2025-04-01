@@ -20,6 +20,7 @@
   "homepage": "https://github.com/Anyeel/backend-auth#readme",
   "dependencies": {
     "better-sqlite3": "^11.9.1",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
   }
 }

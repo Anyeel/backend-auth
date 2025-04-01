@@ -5,30 +5,42 @@ const fs = require('fs');
 const path = require('path');
 const port = 3000;
 
+const http = require("http");
+const { Server } = require("socket.io");
+
 const db = betterSqlite3('aparcamiento.db');
+
+const server = http.createServer(app);
+const io = new Server(server);
 
 app.use(express.static('public'));
 
 const initSqlPath = path.join(__dirname, 'init-aparcamiento.sql');
 const initSql = fs.readFileSync(initSqlPath, 'utf-8');
 db.exec(initSql);
-/*
-const query = db.prepare('SELECT * FROM plazas');
-const plazas = query.all();
-console.log(plazas);
-*/
+
+// endpoint de la conexion
+io.on("connection", (socket) => {
+    console.log("Usuario conectado");
+    socket.emit("connected", "Conexión establecida");
+    socket.on("disconnect", () => {
+        console.log("Usuario desconectado");
+    });
+});
+
+setInterval(() =>{
+    const rows = db.prepare("SELECT * FROM plazas").all();
+    io.emit("parkingData", rows);
+}, 2000)
+
+server.listen(port, () => {
+    console.log("Servidor funcionando en el puerto 3000");
+});
+
 app.get('/', (req, res) => {
     res.send('Hola Mundo');
 });
-/*
-app.post("/users", (req, res) => {
-    const query = db.prepare('INSERT INTO users (name, pass) VALUES (?, ?)');
-    const name = req.body.name;
-    const pass = req.body.pass;
-    query.run(name, pass);
-    res.send('Usuario creado');
-});
-*/
+
 app.get("/plazas", (req, res) => {
     const query = db.prepare('SELECT * FROM plazas');
     const plazas = query.all();
@@ -41,31 +53,9 @@ app.get("/plazas/:id", (req, res) => {
     const plaza = query.all(id);
     res.json(plaza);
 });
-
+/*
 app.listen(port, () => {
     console.log(`Servidor funcionando en el puerto ${port}`);
-});
-
-app.patch("/plazas/:id/ocupado", (req, res) => {
-    const id = req.params.id;
-
-    // Obtener el estado actual de "ocupado"
-    const selectQuery = db.prepare('SELECT ocupado FROM plazas WHERE id = ?');
-    const plaza = selectQuery.get(id);
-
-    if (!plaza) {
-        res.status(404).send('Plaza no encontrada');
-        return;
-    }
-
-    // Alternar entre 0 y 1 (false y true)
-    const nuevoEstado = plaza.ocupado === 0 ? 1 : 0;
-
-    // Actualizar el estado en la base de datos
-    const updateQuery = db.prepare('UPDATE plazas SET ocupado = ? WHERE id = ?');
-    updateQuery.run(nuevoEstado, id);
-
-    res.json({ id, ocupado: nuevoEstado });
 });
 
 app.get("/plazasdisponibles", (req, res) => {
